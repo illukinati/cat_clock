@@ -40,7 +40,7 @@ class ClockCustomizer extends StatefulWidget {
 class _ClockCustomizerState extends State<ClockCustomizer> {
   final _model = ClockModel();
   ThemeMode _themeMode = ThemeMode.light;
-  bool _configButtonShown = false;
+  bool _configButtonShown = true;
 
   @override
   void initState() {
@@ -158,12 +158,12 @@ class _ClockCustomizerState extends State<ClockCustomizer> {
     return Builder(
       builder: (BuildContext context) {
         return IconButton(
-          icon: Icon(Icons.settings),
+          icon: Icon(Icons.settings, color: Colors.white),
           tooltip: 'Configure clock',
           onPressed: () {
             Scaffold.of(context).openEndDrawer();
             setState(() {
-              _configButtonShown = false;
+              _configButtonShown = true;
             });
           },
         );
@@ -194,6 +194,7 @@ class _ClockCustomizerState extends State<ClockCustomizer> {
       themeMode: _themeMode,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: Colors.black,
         resizeToAvoidBottomPadding: false,
         endDrawer: _configDrawer(context),
         body: SafeArea(
