@@ -126,6 +126,10 @@ class _ClockCustomizerState extends State<ClockCustomizer> {
                     (ThemeMode mode) {
                   setState(() {
                     _themeMode = mode;
+                    (mode.toString() == "ThemeMode.dark")
+                        ? _model.theme = "dark_theme"
+                        : _model.theme = "light_theme";
+
                   });
                 }),
                 _switch('24-hour format', _model.is24HourFormat, (bool value) {

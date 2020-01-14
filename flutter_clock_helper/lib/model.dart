@@ -32,6 +32,16 @@ class ClockModel extends ChangeNotifier {
     }
   }
 
+  /// Current theme
+  get theme => _theme;
+  String _theme = "light_theme";
+  set theme(String theme){
+    if(theme != _theme) {
+      _theme = theme;
+      notifyListeners();
+    }
+  }
+
   /// Current temperature string, for example '22°C'.
   get temperature => _convertFromCelsius(_temperature);
   // Stored in degrees celsius, and converted based on the current unit setting

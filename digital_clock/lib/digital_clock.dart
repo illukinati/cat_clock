@@ -10,24 +10,6 @@ import 'package:intl/intl.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:flare_flutter/flare_actor.dart';
 
-enum _Element {
-  background,
-  text,
-  shadow,
-}
-
-final _lightTheme = {
-  _Element.background: Color(0xFF81B3FE),
-  _Element.text: Colors.white,
-  _Element.shadow: Colors.black,
-};
-
-final _darkTheme = {
-  _Element.background: Colors.black,
-  _Element.text: Colors.white,
-  _Element.shadow: Color(0xFF174EA6),
-};
-
 /// A basic digital clock.
 ///
 /// You can do better than this!
@@ -50,7 +32,8 @@ class _DigitalClockState extends State<DigitalClock> {
   final scrollDirection = Axis.vertical;
   var clocks = new List(5);
 
-  var catAnimation = "watching_around";
+  var catAnimation = "idle_awake";
+  var catTheme = "light_theme";
 
   @override
   void initState() {
@@ -86,10 +69,15 @@ class _DigitalClockState extends State<DigitalClock> {
     super.dispose();
   }
 
-  void _updateModel() {
-    setState(() {
-      // Cause the clock to rebuild when the model changes.
-    });
+  void _updateModel() async {
+    if(widget.model.theme != catTheme){
+      setState(() {
+        catAnimation = widget.model.theme;
+        catTheme = widget.model.theme;
+      });
+    }
+    await Future.delayed(const Duration(seconds: 1));
+    _weatherConverter(widget.model.weatherString);
   }
 
   void _updateTime() {
@@ -115,39 +103,129 @@ class _DigitalClockState extends State<DigitalClock> {
     });
   }
 
+  void _weatherConverter(String weather){
+    switch(weather){
+      case "sunny":
+        _becomeSunny();
+        break;
+      case "rainy":
+        _startToRain();
+        break;
+      case "thunderstorm":
+        _startToRain();
+        break;
+      case "snowy":
+        _startToSnow();
+        break;
+      case "windy":
+        _becomeWindy();
+        break;
+    }
+  }
+
+  void _startToRain() async {
+    setState(() {
+      catAnimation = "go_to_rain";
+    });
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      catAnimation = "raining";
+    });
+  }
+
+  void _becomeSunny() async{
+    if(catAnimation == "raining"){
+      setState(() {
+        catAnimation = "stop_rain";
+      });
+    } else if (catAnimation == "snowy"){
+      setState(() {
+        catAnimation = "back_to_normal";
+      });
+    }
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      catAnimation = "idle_awake";
+    });
+  }
+
+  void _startToSnow() async{
+    setState(() {
+      catAnimation = "back_to_normal";
+    });
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      catAnimation = "snowy";
+    });
+  }
+
+  void _becomeWindy() async{
+    setState(() {
+      catAnimation = "back_to_normal";
+    });
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      catAnimation = "windy";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    Color hourBg = (catTheme == "light_theme") ? Colors.blue[100]: Colors.black;
+    Color minuteBg = (catTheme == "light_theme") ? Colors.orange[100]: Colors.black;
+    Color secondBg = (catTheme == "light_theme") ? Colors.red[100]: Colors.black;
+
+    Color num = (catTheme == "light_theme") ? Colors.black : Color(0xFFFAFA66);
+
     return Container(
       child: Container(
-        color: Colors.white,
         height: double.infinity,
         alignment: Alignment.bottomCenter,
         child: Stack(
           alignment: Alignment.center,
           children: <Widget>[
             Container(
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      color: (catTheme == "light_theme") ? Colors.lightBlueAccent[100] :  Color(0xFF2E3663),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      color: (catTheme == "light_theme") ? Colors.greenAccent[100] :  Colors.green,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               margin: EdgeInsets.all(MediaQuery.of(context).size.width / 30),
-              color: Color(0xFFC8896E),
+              color: (catTheme == "light_theme") ? Color(0xFF5C422D) : Colors.grey[100],
               child: Row(
                 children: <Widget>[
                   Expanded(
                     flex: 2,
                     child: Container(
-                      margin: const EdgeInsets.fromLTRB(10, 10, 1, 10),
-                      color: Colors.blue[100],
+                      margin: const EdgeInsets.fromLTRB(10, 10, 5, 10),
+                      color: hourBg,
                       child:
-                          verticalSlideClock(0, MediaQuery.of(context).size.width / 2.5),
+                          verticalSlideClock(0, MediaQuery.of(context).size.width / 2.5, num),
                     ),
                   ),
                   Expanded(
                     flex: 2,
                     child: Container(
-                      margin: const EdgeInsets.fromLTRB(1.0, 10, 10, 10),
-                      color: Colors.blue[100],
+                      margin: const EdgeInsets.fromLTRB(5, 10, 10, 10),
+                      color: hourBg,
                       child:
-                          verticalSlideClock(1, MediaQuery.of(context).size.width / 2.5),
+                          verticalSlideClock(1, MediaQuery.of(context).size.width / 2.5, num),
                     ),
                   ),
                   Expanded(
@@ -165,10 +243,10 @@ class _DigitalClockState extends State<DigitalClock> {
                                     child: Container(
                                       margin: const EdgeInsets.only(
                                           top: 10, right: 10, bottom: 10),
-                                      color: Colors.orange[100],
+                                      color: minuteBg,
                                       child: verticalSlideClock(
                                           2,
-                                          MediaQuery.of(context).size.width / 3.8),
+                                          MediaQuery.of(context).size.width / 3.8, num),
                                     ),
                                   ),
                                   Expanded(
@@ -176,10 +254,10 @@ class _DigitalClockState extends State<DigitalClock> {
                                     child: Container(
                                       margin: const EdgeInsets.only(
                                           top: 10, right: 10, bottom: 10),
-                                      color: Colors.orange[100],
+                                      color: minuteBg,
                                       child: verticalSlideClock(
                                           3,
-                                          MediaQuery.of(context).size.width / 3.8),
+                                          MediaQuery.of(context).size.width / 3.8, num),
                                     ),
                                   ),
                                 ],
@@ -188,7 +266,7 @@ class _DigitalClockState extends State<DigitalClock> {
                           ),
                           Expanded(
                             flex: 1,
-                            child: horizontalSlideClock()
+                            child: horizontalSlideClock(secondBg, num)
                           ),
                         ],
                       ),
@@ -197,13 +275,10 @@ class _DigitalClockState extends State<DigitalClock> {
                 ],
               ),
             ),
-//            Container(
-//              child: Image.asset("assets/images/frame.png", fit: BoxFit.cover),
-//            ),
             Container(
               alignment: Alignment.bottomLeft,
               child: FlareActor("assets/flares/cat.flr",
-                  fit: BoxFit.fitHeight, animation: "back_to_normal"),
+                  fit: BoxFit.fitHeight, animation: catAnimation),
             ),
           ],
         ),
@@ -211,7 +286,7 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
-  Widget verticalSlideClock(int index, double fontSize) {
+  Widget verticalSlideClock(int index, double fontSize, Color colorNum) {
     return Container(
       alignment: Alignment.center,
       child: ListView.builder(
@@ -228,7 +303,7 @@ class _DigitalClockState extends State<DigitalClock> {
                 child: Text(
                   i.toString(),
                   style: TextStyle(
-                    color: Colors.black,
+                    color: colorNum,
                     fontSize: fontSize,
                     fontFamily: "Solway",
                   ),
@@ -241,11 +316,11 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
-  Widget horizontalSlideClock() {
+  Widget horizontalSlideClock(Color bg, Color colorNum) {
     return Container(
       alignment: Alignment.center,
       margin: const EdgeInsets.only(bottom: 10.0, right: 10.0),
-      color: Colors.red[100],
+      color: bg,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         controller: this.scrollController[4],
@@ -273,7 +348,7 @@ class _DigitalClockState extends State<DigitalClock> {
                           ? MediaQuery.of(context).size.width / 11
                           : MediaQuery.of(context).size.width / 15,
                       color: (tick == clocks[4])
-                          ? Colors.black
+                          ? colorNum
                           : Colors.white,
                       fontFamily: "Solway"),
                 ),
