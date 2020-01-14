@@ -197,7 +197,7 @@ class _DigitalClockState extends State<DigitalClock> {
                   Expanded(
                     flex: 1,
                     child: Container(
-                      color: (catTheme == "light_theme") ? Colors.greenAccent[100] :  Colors.green,
+                      color: (catTheme == "light_theme") ? Colors.greenAccent[100] :  Color(0xFF224A29),
                     ),
                   )
                 ],
