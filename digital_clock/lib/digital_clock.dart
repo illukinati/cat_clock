@@ -32,8 +32,11 @@ class _DigitalClockState extends State<DigitalClock> {
   final scrollDirection = Axis.vertical;
   var clocks = new List(5);
 
-  var catAnimation = "idle_awake";
-  var catTheme = "light_theme";
+  String catAnimation = "sunny";
+  String catTheme = "light_theme";
+  Color skyColor = Colors.lightBlueAccent[100];
+  Color groundColor = Colors.lightGreenAccent[100];
+  bool isSleeping = false;
 
   @override
   void initState() {
@@ -96,6 +99,10 @@ class _DigitalClockState extends State<DigitalClock> {
             preferPosition: AutoScrollPosition.begin);
       }
 
+      _checkSleep();
+      _skyController(DateTime.now().hour);
+      _groundController();
+
       _timer = Timer(
         Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
         _updateTime,
@@ -112,7 +119,7 @@ class _DigitalClockState extends State<DigitalClock> {
         _startToRain();
         break;
       case "thunderstorm":
-        _startToRain();
+        _startToThunderstorm();
         break;
       case "snowy":
         _startToSnow();
@@ -120,54 +127,120 @@ class _DigitalClockState extends State<DigitalClock> {
       case "windy":
         _becomeWindy();
         break;
+      case "cloudy":
+        _startCloudy();
+        break;
     }
   }
 
+  /// Weather Controller
   void _startToRain() async {
-    setState(() {
-      catAnimation = "go_to_rain";
-    });
+    setState(() => catAnimation = "start_raining");
     await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      catAnimation = "raining";
-    });
+    setState(() => catAnimation = "rainy");
+  }
+
+  void _startToThunderstorm() async {
+    setState(() => catAnimation = "start_raining");
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => catAnimation = "thunderstorm");
   }
 
   void _becomeSunny() async{
-    if(catAnimation == "raining"){
-      setState(() {
-        catAnimation = "stop_rain";
-      });
-    } else if (catAnimation == "snowy"){
-      setState(() {
-        catAnimation = "back_to_normal";
-      });
+    if(catAnimation == "rainy" || catAnimation == "thunderstorm"){
+      setState(() => catAnimation = "stop_raining");
+    } else if (catAnimation == "snowy" || catAnimation == "cloudy"){
+      setState(() => catAnimation = "back_to_normal");
     }
     await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      catAnimation = "idle_awake";
-    });
+    setState(() => catAnimation = "sunny");
   }
 
   void _startToSnow() async{
-    setState(() {
-      catAnimation = "back_to_normal";
-    });
+    setState(() => catAnimation = "back_to_normal");
     await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      catAnimation = "snowy";
-    });
+    setState(() => catAnimation = "snowy");
+  }
+
+  void _startCloudy() async{
+    setState(() => catAnimation = "back_to_normal");
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => catAnimation = "start_cloudy");
+    await Future.delayed(const Duration(seconds: 3));
+    setState(() => catAnimation = "cloudy");
   }
 
   void _becomeWindy() async{
-    setState(() {
-      catAnimation = "back_to_normal";
-    });
+    setState(() => catAnimation = "back_to_normal");
     await Future.delayed(const Duration(seconds: 1));
+    setState(() => catAnimation = "windy");
+  }
+
+  /// Awake or not controller
+  void _checkSleep() {
+    if(DateTime.now().hour > 20){
+      if(!isSleeping)
+        _goToSleep();
+      else
+        setState(() => catAnimation = "sleeping");
+    } else {
+      if(isSleeping)
+        _wakeUp();
+    }
+  }
+
+  void _goToSleep() async {
+    setState(() => catAnimation = "back_to_normal");
+    await Future.delayed(const Duration(milliseconds: 500));
+    setState(() => catAnimation = "start_to_sleep");
+    await Future.delayed(const Duration(seconds: 4));
     setState(() {
-      catAnimation = "windy";
+      catAnimation = "sleeping";
+      isSleeping = true;
     });
   }
+
+  void _wakeUp() async{
+    setState(() {
+      catAnimation = "wake_up";
+      isSleeping = false;
+    });
+    await Future.delayed(const Duration(seconds: 3));
+    _weatherConverter(widget.model.weatherString);
+  }
+
+  /// Sky controller
+  void _skyController(int hour){
+    if(catAnimation == "rainy" || catAnimation == "start_raining" || catAnimation == "thunderstorm"){
+      setState(() => skyColor = Color(0xFF31414F));
+    } else if(catAnimation == "snowy") {
+      setState(() => skyColor = Color(0xFFD0E4F5));
+    } else if(hour >= 4 && hour <= 10){
+      setState(() => skyColor = Colors.lightBlueAccent[100]);
+    } else if (hour >= 11 && hour <= 14){
+      setState(() => skyColor = Color(0xFFF1F29D));
+    } else if (hour >= 15 && hour <= 18){
+      setState(() => skyColor = Color(0xFFF2CB8D));
+    } else if (hour >= 19 && hour <= 21){
+      setState(() => skyColor = Color(0xFF78A4CC));
+    } else if (hour >= 21 && hour <= 3){
+      setState(() => skyColor = Color(0xFF31414F));
+    }
+  }
+
+  /// Ground controller
+  void _groundController(){
+    if(catAnimation == "snowy"){
+      setState(() => groundColor = Colors.white);
+      return;
+    }
+    if(catTheme == "light_theme"){
+      setState(() => groundColor = Colors.greenAccent[100]);
+    } else if(catTheme == "dark_theme"){
+      setState(() => groundColor = Color(0xFF856D4C));
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -191,13 +264,13 @@ class _DigitalClockState extends State<DigitalClock> {
                   Expanded(
                     flex: 2,
                     child: Container(
-                      color: (catTheme == "light_theme") ? Colors.lightBlueAccent[100] :  Color(0xFF2E3663),
+                      color: skyColor,
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: Container(
-                      color: (catTheme == "light_theme") ? Colors.greenAccent[100] :  Color(0xFF224A29),
+                      color: groundColor,
                     ),
                   )
                 ],
@@ -222,7 +295,7 @@ class _DigitalClockState extends State<DigitalClock> {
                   Expanded(
                     flex: 2,
                     child: Container(
-                      margin: const EdgeInsets.fromLTRB(5, 10, 10, 10),
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                       color: hourBg,
                       child:
                           verticalSlideClock(1, MediaQuery.of(context).size.width / 2.5, num),
@@ -241,8 +314,7 @@ class _DigitalClockState extends State<DigitalClock> {
                                   Expanded(
                                     flex: 1,
                                     child: Container(
-                                      margin: const EdgeInsets.only(
-                                          top: 10, right: 10, bottom: 10),
+                                      margin: const EdgeInsets.fromLTRB(10, 10, 5, 10),
                                       color: minuteBg,
                                       child: verticalSlideClock(
                                           2,
@@ -252,8 +324,7 @@ class _DigitalClockState extends State<DigitalClock> {
                                   Expanded(
                                     flex: 1,
                                     child: Container(
-                                      margin: const EdgeInsets.only(
-                                          top: 10, right: 10, bottom: 10),
+                                      margin: const EdgeInsets.fromLTRB(0, 10, 10, 10),
                                       color: minuteBg,
                                       child: verticalSlideClock(
                                           3,
@@ -319,7 +390,7 @@ class _DigitalClockState extends State<DigitalClock> {
   Widget horizontalSlideClock(Color bg, Color colorNum) {
     return Container(
       alignment: Alignment.center,
-      margin: const EdgeInsets.only(bottom: 10.0, right: 10.0),
+      margin: const EdgeInsets.only(left: 10.0, bottom: 10.0, right: 10.0),
       color: bg,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
