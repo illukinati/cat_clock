@@ -135,6 +135,10 @@ class _DigitalClockState extends State<DigitalClock> {
 
   /// Weather Controller
   void _startToRain() async {
+    if(catAnimation != "sunny"){
+      setState(() => catAnimation = "back_to_normal");
+      await Future.delayed(const Duration(seconds: 1));
+    }
     setState(() => catAnimation = "start_raining");
     await Future.delayed(const Duration(seconds: 1));
     setState(() => catAnimation = "rainy");
@@ -179,8 +183,9 @@ class _DigitalClockState extends State<DigitalClock> {
   /// Awake or not controller
   void _checkSleep() {
     if(DateTime.now().hour > 20){
-      if(!isSleeping)
+      if(!isSleeping){
         _goToSleep();
+      }
       else
         setState(() => catAnimation = "sleeping");
     } else {
@@ -190,7 +195,6 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   void _goToSleep() async {
-    setState(() => catAnimation = "back_to_normal");
     await Future.delayed(const Duration(milliseconds: 500));
     setState(() => catAnimation = "start_to_sleep");
     await Future.delayed(const Duration(seconds: 4));
@@ -201,11 +205,9 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   void _wakeUp() async{
-    setState(() {
-      catAnimation = "wake_up";
-      isSleeping = false;
-    });
+    setState(() => catAnimation = "wake_up");
     await Future.delayed(const Duration(seconds: 3));
+    setState(()=>isSleeping = false);
     _weatherConverter(widget.model.weatherString);
   }
 
@@ -215,7 +217,7 @@ class _DigitalClockState extends State<DigitalClock> {
       setState(() => skyColor = Color(0xFF31414F));
     } else if(catAnimation == "snowy") {
       setState(() => skyColor = Color(0xFFD0E4F5));
-    } else if(hour >= 4 && hour <= 10){
+    } else if(hour >= 4 && hour <= 10 || catAnimation == "cloudy"){
       setState(() => skyColor = Colors.lightBlueAccent[100]);
     } else if (hour >= 11 && hour <= 14){
       setState(() => skyColor = Color(0xFFF1F29D));
