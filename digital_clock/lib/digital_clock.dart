@@ -145,6 +145,8 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   void _startToThunderstorm() async {
+    setState(() => catAnimation = "back_to_normal");
+    await Future.delayed(const Duration(seconds: 1));
     setState(() => catAnimation = "start_raining");
     await Future.delayed(const Duration(seconds: 1));
     setState(() => catAnimation = "thunderstorm");
