@@ -6,10 +6,32 @@ See [flutter.dev/clock](https://flutter.dev/clock) for how to get started, submi
 
 See a [live demo](https://maryx.github.io/flutter_clock) with Flutter for Web!
 
-Example [Analog Clock](analog_clock)
+# Flutter Cat
 
-<img src='analog_clock/analog.gif' width='350'>
+A clock UI with a cat inside to accompany you through your day every day no matter how's the weather that day.
 
-Example [Digital Clock](digital_clock)
+<img src='assets/sunny.gif' width='350'>
 
-<img src='digital_clock/digital.gif' width='350'>
+in your cloudy day
+
+<img src='assets/cloudy.gif' width='350'>
+
+in your windy day
+
+<img src='assets/windy.gif' width='350'>
+
+in your snowy day
+
+<img src='assets/snowy.gif' width='350'>
+
+in your rainy day
+
+<img src='assets/rainy.gif' width='350'>
+
+even in thunderstorm
+
+<img src='assets/thunderstorm.gif' width='350'>
+
+the cat also available in dark mode
+
+<img src='assets/dark.gif' width='350'>
